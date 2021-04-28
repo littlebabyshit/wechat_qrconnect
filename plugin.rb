@@ -11,7 +11,7 @@ class OmniAuth::Strategies::WechatQRconnect < OmniAuth::Strategies::OAuth2
 
   option :client_options, {
     :site => 'https://open.weixin.qq.com',
-    :authorize_url => 'https://open.weixin.qq.com/connect/qrconnect',
+    :authorize_url => 'https://open.weixin.qq.com/connect/oauth2/authorize',
     :token_url => 'https://api.weixin.qq.com/sns/oauth2/access_token'
   }
 
@@ -49,7 +49,7 @@ class OmniAuth::Strategies::WechatQRconnect < OmniAuth::Strategies::OAuth2
   def authorize_params
     super.tap do |params|
       params[:appid] = options.client_id
-      params[:scope] = 'snsapi_login'
+      params[:scope] = 'snsapi_userinfo'
     end
   end
 
