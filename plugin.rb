@@ -50,6 +50,8 @@ class OmniAuth::Strategies::WechatQRconnect < OmniAuth::Strategies::OAuth2
     super.tap do |params|
       params[:appid] = options.client_id
       params[:scope] = 'snsapi_userinfo'
+      params.delete('client_id')
+
     end
   end
 
