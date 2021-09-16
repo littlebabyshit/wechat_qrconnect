@@ -17,7 +17,7 @@ class OmniAuth::Strategies::WechatQRconnect < OmniAuth::Strategies::OAuth2
 
   uid do
     @uid ||= begin
-      access_token.params['openid']
+      access_token.params['unionid']
     end
   end
 
@@ -26,6 +26,8 @@ class OmniAuth::Strategies::WechatQRconnect < OmniAuth::Strategies::OAuth2
       :nickname => raw_info['nickname'],
       :name => raw_info['nickname'],
       :image => raw_info['headimgurl'],
+      :email => raw_info['email']
+
     }
   end
 
@@ -37,7 +39,7 @@ class OmniAuth::Strategies::WechatQRconnect < OmniAuth::Strategies::OAuth2
 
   def raw_info
     @raw_info ||= begin
-      response = client.request(:get, "https://api.weixin.qq.com/sns/userinfo", :params => {
+      response = client.request(:get, "https://login.ceshiren.com/lixu/discourse/userinfo", :params => {
         :openid => uid,
         :access_token => access_token.token
       }, :parse => :json)
@@ -69,42 +71,30 @@ end
 OmniAuth.config.add_camelization('wechat_qrconnect', 'WechatQRconnect')
 
 # Discourse plugin
-class WechatQRconnectAuthenticator < ::Auth::Authenticator
+class WechatQRconnectAuthenticator < Auth::ManagedAuthenticator
 
   def name
     'wechat_qrconnect'
   end
 
-  def after_authenticate(auth_token)
-    result = Auth::Result.new
 
-    data = auth_token[:info]
-    raw_info = auth_token[:extra][:raw_info]
-    name = data['nickname']
-    username = data['name']
-    wechat_uid = auth_token[:uid]
-
-    current_info = ::PluginStore.get('wechat_qrconnect', "wechat_uid_#{wechat_uid}")
-
-    result.user =
-      if current_info
-        User.where(id: current_info[:user_id]).first
-      end
-
-    result.name = name
-    result.username = username
-    result.extra_data = { wechat_uid: wechat_uid, raw_info: raw_info }
-
-    result
+  def log(info)
+    Rails.logger.warn("OAuth2 Debugging: #{info}")
   end
 
-  def after_create_account(user, auth)
-    wechat_uid = auth[:extra_data][:wechat_uid]
-    ::PluginStore.set('wechat_qrconnect', "wechat_uid_#{wechat_uid}", {user_id: user.id})
-  end
+#   def primary_email_verified?(auth)
+#     log("primary_email_verified: \n\ncreds: #{auth['info']['email_verified']}")
+#
+#     return true if SiteSetting.oauth2_email_verified
+#     verified = auth['info']['email_verified']
+#     verified = true if verified == "true"
+#     verified = false if verified == "false"
+#     verified
+#   end
 
   def register_middleware(omniauth)
-    omniauth.provider :wechat_qrconnect, :setup => lambda { |env|
+    omniauth.provider :wechat_qrconnect, :setup => lambda
+     { |env|
       strategy = env['omniauth.strategy']
       strategy.options[:client_id] = SiteSetting.wechat_qrconnect_client_id
       strategy.options[:client_secret] = SiteSetting.wechat_qrconnect_client_secret
@@ -112,14 +102,5 @@ class WechatQRconnectAuthenticator < ::Auth::Authenticator
   end
 end
 
-auth_provider :frame_width => 760,
-              :frame_height => 500,
-              :authenticator => WechatQRconnectAuthenticator.new,
-              :background_color => '#51b7ec'
-
-register_css <<EOF
-.btn-social.wechat_qrconnect:before {
-  font-family: FontAwesome;
-  content: "\\f1d7";
-}
-EOF
+auth_provider title_setting: wechat_phone,
+              authenticator: WechatQRconnectAuthenticator.new
