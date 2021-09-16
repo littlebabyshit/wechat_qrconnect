@@ -52,8 +52,6 @@ class OmniAuth::Strategies::WechatQRconnect < OmniAuth::Strategies::OAuth2
     super.tap do |params|
       params[:appid] = options.client_id
       params[:scope] = 'snsapi_userinfo'
-      params.delete('client_id')
-
     end
   end
 
@@ -71,7 +69,7 @@ end
 OmniAuth.config.add_camelization('wechat_qrconnect', 'WechatQRconnect')
 
 # Discourse plugin
-class WechatQRconnectAuthenticator < Auth::ManagedAuthenticator
+class WechatQRconnectAuthenticator < ::Auth::ManagedAuthenticator
 
   def name
     'wechat_qrconnect'
@@ -82,19 +80,9 @@ class WechatQRconnectAuthenticator < Auth::ManagedAuthenticator
     Rails.logger.warn("OAuth2 Debugging: #{info}")
   end
 
-#   def primary_email_verified?(auth)
-#     log("primary_email_verified: \n\ncreds: #{auth['info']['email_verified']}")
-#
-#     return true if SiteSetting.oauth2_email_verified
-#     verified = auth['info']['email_verified']
-#     verified = true if verified == "true"
-#     verified = false if verified == "false"
-#     verified
-#   end
 
   def register_middleware(omniauth)
-    omniauth.provider :wechat_qrconnect, :setup => lambda
-     { |env|
+    omniauth.provider :wechat_qrconnect, :setup => lambda { |env|
       strategy = env['omniauth.strategy']
       strategy.options[:client_id] = SiteSetting.wechat_qrconnect_client_id
       strategy.options[:client_secret] = SiteSetting.wechat_qrconnect_client_secret
