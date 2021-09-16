@@ -90,4 +90,5 @@ class WechatQRconnectAuthenticator < ::Auth::ManagedAuthenticator
   end
 end
 
-auth_provider authenticator: WechatQRconnectAuthenticator.new
+auth_provider title_setting: wechat_qrconnect_title,
+              authenticator: WechatQRconnectAuthenticator.new

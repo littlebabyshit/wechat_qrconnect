@@ -3,3 +3,5 @@ login:
     default: ''
   wechat_qrconnect_client_secret:
     default: ''
+  wechat_qrconnect_title:
+    default: 'wechat'
