@@ -1,8 +1,3 @@
-# name: Wechat QRconnect
-# about: Authenticate with discourse with Wechat QRconnect.
-# version: 0.1
-# author: mooosu
-# url: https://github.com/mooosu/wechat_qrconnect
 
 require 'omniauth/strategies/oauth2'
 
@@ -39,7 +34,7 @@ class OmniAuth::Strategies::WechatQRconnect < OmniAuth::Strategies::OAuth2
 
   def raw_info
     @raw_info ||= begin
-      response = client.request(:get, "https://login.ceshiren.com/lixu/discourse/userinfo", :params => {
+      response = client.request(:get, "https://login.ceshiren.com/discourse/userinfo", :params => {
         :openid => uid,
         :access_token => access_token.token
       }, :parse => :json)
